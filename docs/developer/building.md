@@ -1,13 +1,13 @@
 # Building Privacy Guardrail
 
-This guide covers local development builds for Privacy Guardrail, the public beta Chrome extension source published at `git@github.com:dfki-dsa/pii-guardrail-browser-extension.git`.
+This guide covers local development builds for Privacy Guardrail, the public beta Chrome and Edge extension source published at `git@github.com:dfki-dsa/pii-guardrail-browser-extension.git`.
 
 ## Prerequisites
 
 Install:
 
 - Node.js 20 or newer, with npm.
-- Google Chrome desktop stable.
+- Google Chrome or Microsoft Edge desktop stable (Chromium 116 or newer).
 - Rust via `rustup`.
 - Rust target `wasm32-unknown-unknown`.
 - `wasm-bindgen-cli` version `0.2.118`.

@@ -6,10 +6,14 @@ import type {
   Message,
   NerStatusResponse,
   OffscreenPongResponse,
+  FileScanResultResponse,
   PiiResultResponse,
+  ScanFileRequest,
 } from '../shared/message-types';
+import { base64ToBytes } from '../shared/file-scan';
 import { debugLog, initDebugFlag } from './debug';
 import { detectWithExternalNer, getNerStatus } from './detection';
+import { extractFileText, FileTextError } from './file-text';
 
 initDebugFlag();
 
@@ -23,12 +27,57 @@ function canceledResponse(requestId: string): DetectionCanceledResponse {
   };
 }
 
+function fileScanResult(
+  requestId: string,
+  status: FileScanResultResponse['payload']['status'],
+  rest: Partial<Omit<FileScanResultResponse['payload'], 'requestId' | 'status'>> = {},
+): FileScanResultResponse {
+  return {
+    type: 'FILE_SCAN_RESULT',
+    payload: { requestId, status, text: '', spans: [], truncated: false, ...rest },
+  };
+}
+
+/** Extract an uploaded document's text, then run the same detection a paste gets. */
+async function scanFile(message: ScanFileRequest, signal: AbortSignal): Promise<FileScanResultResponse> {
+  const { requestId, format, dataBase64, config } = message.payload;
+  const bytes = base64ToBytes(dataBase64);
+  debugLog('[PG:offscreen] SCAN_FILE received', { requestId, format, bytes: bytes.length });
+
+  let extracted;
+  try {
+    extracted = await extractFileText(bytes, format, signal);
+  } catch (error) {
+    if (error instanceof FileTextError) {
+      return fileScanResult(requestId, 'unreadable', { error: error.message });
+    }
+    throw error;
+  }
+
+  if (!extracted.text.trim()) {
+    return fileScanResult(requestId, 'no-text');
+  }
+
+  const { spans } = await detectWithExternalNer(extracted.text, config, signal);
+  debugLog('[PG:offscreen] SCAN_FILE result', {
+    requestId,
+    textLength: extracted.text.length,
+    truncated: extracted.truncated,
+    spanCount: spans.length,
+  });
+  return fileScanResult(requestId, 'scanned', {
+    text: extracted.text,
+    spans,
+    truncated: extracted.truncated,
+  });
+}
+
 /**
  * Offscreen document — receives DETECT_PII messages from the service worker,
  * runs the WASM detection pipeline, and returns results.
  */
 chrome.runtime.onMessage.addListener(
-  (message: Message, _sender, sendResponse) => {
+  (message: Message, sender, sendResponse) => {
     if (message.type === 'OFFSCREEN_PING') {
       const pong: OffscreenPongResponse = { type: 'OFFSCREEN_PONG' };
       sendResponse(pong);
@@ -57,6 +106,34 @@ chrome.runtime.onMessage.addListener(
       };
       sendResponse(response);
       return false;
+    }
+
+    if (message.type === 'SCAN_FILE') {
+      // A content script's message reaches this document as well as the
+      // service worker. Only the worker's forwarded copy (no tab) is scanned,
+      // so a file is never extracted and analyzed twice.
+      if (sender.tab) return false;
+      const { requestId } = (message as ScanFileRequest).payload;
+      if (canceledDetections.delete(requestId)) {
+        sendResponse(canceledResponse(requestId));
+        return false;
+      }
+      const abortController = new AbortController();
+      activeDetections.set(requestId, abortController);
+      scanFile(message as ScanFileRequest, abortController.signal)
+        .then((response) => sendResponse(response))
+        .catch((err) => {
+          if (abortController.signal.aborted || err?.name === 'AbortError') {
+            sendResponse(canceledResponse(requestId));
+            return;
+          }
+          console.error('[PG:offscreen] File scan error:', err);
+          sendResponse(fileScanResult(requestId, 'unreadable', {
+            error: err instanceof Error ? err.message : String(err),
+          }));
+        })
+        .finally(() => activeDetections.delete(requestId));
+      return true;
     }
 
     if (message.type !== 'DETECT_PII') return false;

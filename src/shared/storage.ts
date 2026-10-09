@@ -119,6 +119,9 @@ function normalizeSettings(raw: unknown): Settings {
   if (typeof settings.clipboardInterceptEnabled !== 'boolean') {
     settings.clipboardInterceptEnabled = DEFAULT_SETTINGS.clipboardInterceptEnabled;
   }
+  if (typeof settings.fileScanEnabled !== 'boolean') {
+    settings.fileScanEnabled = DEFAULT_SETTINGS.fileScanEnabled;
+  }
   settings.groupsEnabled = normalizeGroupsEnabled(candidate.groupsEnabled);
   settings.groupThresholds = normalizeGroupThresholds(candidate.groupThresholds);
   settings.allowlist = normalizeAllowlist(candidate.allowlist);

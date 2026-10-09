@@ -2,11 +2,13 @@ import type {
   CancelDetectionRequest,
   DetectPiiRequest,
   DetectionCanceledResponse,
+  FileScanResultResponse,
   GetNerStatusRequest,
   Message,
   NerStatusResponse,
   OpenOptionsPageRequest,
   PiiResultResponse,
+  ScanFileRequest,
   SystemCompatibilityStatusResponse,
   SystemSignalsResponse,
 } from "../shared/message-types";
@@ -427,6 +429,7 @@ chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) =>
 
 function isBackgroundRequest(message: Message): boolean {
   return message.type === "DETECT_PII"
+    || message.type === "SCAN_FILE"
     || message.type === "CANCEL_DETECTION"
     || message.type === "GET_NER_STATUS"
     || message.type === "LOG_FEEDBACK"
@@ -475,6 +478,36 @@ async function handleMessage(
           payload: { requestId: message.payload.requestId, spans: [], timings: { totalMs: 0 } },
           error: err instanceof Error ? err.message : String(err),
         });
+      }
+      break;
+    }
+
+    case "SCAN_FILE": {
+      const settings = await loadSettings();
+      const config = detectionOptionsFromSettings(settings, message.payload.config);
+      const request: ScanFileRequest = {
+        ...message,
+        payload: { ...message.payload, config },
+      };
+      try {
+        const response = await withOffscreenOperation(() => chrome.runtime.sendMessage(request));
+        sendResponse(response);
+      } catch (err) {
+        if (canceledDetectionIds.delete(message.payload.requestId)) {
+          sendResponse(canceledResponse(message.payload.requestId));
+          break;
+        }
+        sendResponse({
+          type: "FILE_SCAN_RESULT",
+          payload: {
+            requestId: message.payload.requestId,
+            status: "unreadable",
+            text: "",
+            spans: [],
+            truncated: false,
+            error: err instanceof Error ? err.message : String(err),
+          },
+        } satisfies FileScanResultResponse);
       }
       break;
     }

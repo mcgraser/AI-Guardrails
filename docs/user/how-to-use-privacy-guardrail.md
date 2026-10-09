@@ -42,6 +42,16 @@ For repeated false positives, use the extension settings to add allowlist entrie
 
 On supported chat pages, Privacy Guardrail watches model responses for placeholders and restores known originals locally where supported. Restoration depends on the local placeholder or vault record still being available. If the model rewrites a placeholder heavily, restoration may be incomplete.
 
+## Uploading Files
+
+When you upload a Word, Excel, PowerPoint or PDF file to a supported chat site — through the attach button, by dragging it onto the page, or by pasting a copied file — Privacy Guardrail holds the upload and checks the file's text first. This includes text you might not see on screen: comments, tracked deletions, speaker notes, hidden worksheets, filled-in PDF form fields, and document properties such as the author.
+
+- If nothing is found, the upload continues and a short confirmation appears.
+- If personal data is found, a warning lists each file with the kinds of data found, how often, and a few examples. Choose **Upload anyway** to send the file unchanged, or **Don’t upload** to keep it off the page.
+- If a file cannot be checked — a scanned PDF without a text layer (there is no OCR), a password-protected file, or a file larger than 25 MB — the warning says so and asks the same question.
+
+Files are never modified: the warning is a prompt to remove the data in the original application before uploading. The same category, allowlist and sensitivity settings that apply to pastes apply to files. File scanning can be switched off in the popup under **Settings → Scan file uploads**.
+
 ## Canceling A Scan
 
 If a scan is taking too long, use the cancel control. Depending on your settings, the extension may ask whether to paste the original text or drop the pending paste.

@@ -12,7 +12,7 @@
 
 # Privacy Guardrail
 
-Privacy Guardrail is a Manifest V3 Chrome extension that detects personally identifiable information (PII) before text is pasted into supported LLM chat apps. Detection runs **entirely on your device**: deterministic recognizers compiled from Rust to WebAssembly, plus optional transformer NER through ONNX Runtime Web. No pasted text leaves the browser, and the project has no telemetry.
+Privacy Guardrail is a Manifest V3 browser extension for Google Chrome and Microsoft Edge that detects personally identifiable information (PII) before text is pasted — or a Word, Excel, PowerPoint or PDF file is uploaded — into supported LLM chat apps. Detection runs **entirely on your device**: deterministic recognizers compiled from Rust to WebAssembly, plus optional transformer NER through ONNX Runtime Web. No pasted text leaves the browser, and the project has no telemetry.
 
 Developed at the [German Research Center for Artificial Intelligence (DFKI)](https://www.dfki.de/), Data Science and its Applications research department.
 
@@ -40,30 +40,31 @@ Generic or custom sites are not supported in this beta.
 
 ## Install
 
-End users should install from the **Chrome Web Store** once the listing is live. Each GitHub Release also attaches the packaged ZIP and SHA-256 checksum for transparency and manual loading.
+End users should install from the **Chrome Web Store** once the listing is live. The same package runs unchanged in **Microsoft Edge** — see [`docs/user/install-on-microsoft-edge.md`](docs/user/install-on-microsoft-edge.md). Each GitHub Release also attaches the packaged ZIP and SHA-256 checksum for transparency and manual loading.
 
 For an unpacked developer install, see [`docs/developer/building.md`](docs/developer/building.md).
 
 ## System requirements
 
-- Chrome desktop stable (latest).
+- Chrome desktop stable (latest) or Microsoft Edge desktop stable (latest). Minimum Chromium version 116.
 - **Recommended:** ≥ 16 GB RAM and a WebGPU-capable GPU for smooth Local AI detection.
 - **Minimum for Local AI:** more than 2 GB browser-reported memory. On 2 GB or less, the extension auto-disables Local AI and runs pattern-only detection. Between 2 GB and 4 GB, Local AI stays on but a slowdown warning may appear.
 - On capable systems (more than 4 GB browser-reported memory, passive WebGPU available, and no known CPU/WASM fallback), Local AI may warm automatically while the user is active on a supported chat page.
 - Without WebGPU, Local AI falls back to CPU/WASM execution (slower but functional).
 - The Local AI model is a compact 4-bit (q4f16) build that keeps memory around 1 GB while loaded, used for both the WebGPU path and the CPU/WASM fallback.
-- Pattern-only detection runs on any supported Chrome system regardless of memory or WebGPU.
+- Pattern-only detection runs on any supported Chrome or Edge system regardless of memory or WebGPU.
 
-These requirements are heuristic because Local AI runs a transformer NER model entirely in the browser and Chrome reports memory in coarse buckets.
+These requirements are heuristic because Local AI runs a transformer NER model entirely in the browser and Chromium browsers report memory in coarse buckets.
 
 ## How it works
 
 - Intercepts text paste events in supported chat inputs.
+- Checks Word (`.docx`), Excel (`.xlsx`), PowerPoint (`.pptx`) and PDF files before they are uploaded — via file picker, drag and drop, or paste — and warns when they contain personal data. Text, comments, speaker notes, hidden sheets and document properties are read locally; the upload is held until you choose to send or drop it. PDFs are read from their text layer only (no OCR).
 - Detects regex/checksum-backed PII such as email addresses, phone numbers, SSNs, credit cards, IBANs, IP addresses, and dates.
 - Adds local transformer NER for names, addresses, identifiers, credentials, and other free-text PII when model assets are prepared.
 - Shows a review UI before replacing detected spans.
 - Replaces selected spans with stable placeholders such as `[EMAIL_1]` or `[PERSON_1]`.
-- Stores the placeholder map locally in Chrome storage so model responses can be restored later, with restored values visually highlighted.
+- Stores the placeholder map locally in extension storage so model responses can be restored later, with restored values visually highlighted.
 
 No pasted text is sent to a remote inference service. There is no telemetry or analytics. See [`PRIVACY.md`](PRIVACY.md) for the full privacy posture.
 
@@ -73,6 +74,7 @@ No pasted text is sent to a remote inference service. There is no telemetry or a
 - Short names, ambiguous words, code blocks, tables, and unusual formatting reduce detection quality.
 - Local AI can be slow or unavailable depending on browser, device memory, and WebGPU support; pattern-only mode covers a narrower set of categories.
 - Restoration of placeholders into model responses depends on local records and may not handle every response rewrite.
+- File scanning warns but does not redact: an uploaded file is sent as it is. Scanned PDFs and images are not read (no OCR); password-protected files and legacy binary formats (`.doc`, `.xls`, `.ppt`) cannot be checked. Very large files are checked only partially.
 
 ## Documentation
 
@@ -107,7 +109,7 @@ npm run build:wasm
 npm run dev
 ```
 
-Load `dist/` as an unpacked extension in `chrome://extensions` (Developer mode).
+Load `dist/` as an unpacked extension in `chrome://extensions` (Chrome) or `edge://extensions` (Edge), with Developer mode on.
 
 Model-free pull-request checks:
 
@@ -137,7 +139,7 @@ Directional themes — none are commitments, and order may change with evidence 
 
 - More reliable local PII detection (smaller models, distillation, fine-tuning, hybrid pipelines).
 - More browser-efficient inference paths for lower-resource devices.
-- Support for additional Chromium-based browsers beyond Chrome desktop stable.
+- Support for additional Chromium-based browsers beyond Chrome and Edge desktop stable.
 - Mobile support for AI workflows on smartphones.
 - Support for additional AI chat platforms.
 

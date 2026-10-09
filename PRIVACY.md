@@ -44,6 +44,10 @@ Email: datenschutz@dfki.de
 The extension processes data on your device for the following purposes:
 
 - **Local detection** of personal data in text you paste or enter on supported sites.
+- **Local checking of files you upload** (Word, Excel, PowerPoint, PDF) on supported sites:
+  the file's text is extracted and analyzed on your device to warn you before the upload
+  proceeds. The file content is not stored by the extension and not transmitted anywhere by it;
+  whether the file is then uploaded to the AI service is your decision.
 - **Review and marking** of detected items so you can decide what to keep, replace, or ignore.
 - **Replacement** of selected items with placeholders or synthetic substitutes.
 - **Restoration** of original values in responses, where you have chosen to do so.

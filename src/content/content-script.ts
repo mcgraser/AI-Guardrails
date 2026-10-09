@@ -13,6 +13,8 @@ import { ClaudeAdapter } from './site-adapters/claude-adapter';
 import { GeminiAdapter } from './site-adapters/gemini-adapter';
 import { GenericAdapter } from './site-adapters/generic-adapter';
 import { PasteInterceptor, type ComposerMatch } from './paste-interceptor';
+import { FileUploadInterceptor } from './file-upload-interceptor';
+import { buildFileWarningEntries } from './file-scan-review';
 import { sendRuntimeMessageBestEffort } from './runtime-messaging';
 import { shouldShowCriticalLocalAiModal } from './critical-local-ai-modal-status';
 import { ResponseObserver } from './response-observer';
@@ -28,6 +30,7 @@ import { ClipboardInterceptor } from './clipboard-interceptor';
 import { ReviewOverlay } from '../ui/overlay/overlay';
 import { ScanningIndicator } from '../ui/scanning-indicator/scanning-indicator';
 import { CancelDecisionDialog } from '../ui/cancel-decision-dialog/cancel-decision-dialog';
+import { FileWarningDialog } from '../ui/file-warning-dialog/file-warning-dialog';
 import { CriticalLocalAiModal } from '../ui/critical-local-ai-modal/critical-local-ai-modal';
 import { PageStatusChip } from '../ui/page-status-chip/page-status-chip';
 import { chipReasonMessageForStatus, deriveChipReason } from '../shared/page-status-chip-reason';
@@ -918,6 +921,71 @@ async function chooseAfterExplicitScanCancel(): Promise<'paste-original' | 'drop
 
   return result.decision;
 }
+
+// --- File upload scanning (Word, Excel, PowerPoint, PDF) ---
+
+const fileUploadInterceptor = new FileUploadInterceptor({
+  onScanning: (fileCount, cancel) => {
+    scanningIndicator?.stop();
+    scanningIndicator = new ScanningIndicator(settings.theme, cancel);
+    scanningIndicator.start();
+    if (settings.debug) {
+      console.log(`[PG:content] Scanning ${fileCount} uploaded file(s)`);
+    }
+  },
+
+  onScanFinished: () => {
+    scanningIndicator?.stop();
+    scanningIndicator = null;
+  },
+
+  review: async (outcomes) => {
+    const entries = buildFileWarningEntries(outcomes, settings, adaptiveThresholds);
+    if (entries.length === 0) {
+      showIndicator(
+        outcomes.length === 1
+          ? '\u2713 No personal data found in file'
+          : '\u2713 No personal data found in files',
+        NO_PII_INDICATOR_MS,
+      );
+      return true;
+    }
+    const upload = await new FileWarningDialog(settings.theme).show(entries);
+    showIndicator(
+      upload ? '\u26A0 Uploaded with personal data' : 'Upload stopped \u2014 file not sent',
+      NO_PII_INDICATOR_MS,
+    );
+    return upload;
+  },
+
+  onCanceled: async (files) => {
+    const upload = await new FileWarningDialog(settings.theme).show(
+      files.map((file) => ({ fileName: file.name, formatLabel: '', findings: [] })),
+      {
+        title: 'File scan canceled',
+        body: 'Do you want to upload without checking for personal data?',
+      },
+    );
+    showIndicator(
+      upload ? '\u26A0 Uploaded without checking' : 'Upload stopped \u2014 file not sent',
+      NO_PII_INDICATOR_MS,
+    );
+    return upload;
+  },
+
+  onError: (error) => {
+    scanningIndicator?.stop();
+    scanningIndicator = null;
+    showIndicator(`\u26A0 Privacy Guardrail could not check the upload: ${error}`, 4000);
+  },
+}, {
+  waitForReady: () => pasteInterceptorReady,
+  isEnabled: () => !!settings?.enabled && settings.fileScanEnabled,
+});
+
+// Registered before the paste interceptor: a pasted file must be held before
+// the text-paste handler sees the event.
+fileUploadInterceptor.start();
 
 const interceptor = new PasteInterceptor(adapter, {
   onAnalyzing: () => {
