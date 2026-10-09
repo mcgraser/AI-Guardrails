@@ -4,6 +4,11 @@ All notable public changes to Privacy Guardrail will be documented in this file.
 
 The project follows public beta release notes for `0.x` versions.
 
+## [Unreleased]
+
+- Privacy Guardrail now checks Word, Excel, PowerPoint and PDF files before they are uploaded to a supported chat site — whether picked with the attach button, dropped onto the page, or pasted. The upload is held while the file's text is read on your device, including comments, tracked deletions, speaker notes, hidden sheets, filled-in PDF form fields and document properties such as the author. If personal data is found, a warning lists what was found in which file and lets you upload anyway or drop the upload. Files that cannot be checked — scanned PDFs without a text layer (there is no OCR), password-protected files, files over 25 MB — are reported as unchecked rather than passed off as clean. File scanning can be switched off in the popup.
+- Privacy Guardrail now officially supports Microsoft Edge. The same package installs in Edge desktop stable; the manifest now declares the minimum Chromium version (116) both browsers need for the features the extension uses.
+
 ## [0.5.0] - Public Beta
 
 - Privacy Guardrail now recognizes a chat by what is on the page instead of by its web address. It used to carry a list of what a conversation's address looks like on each site, and a site quietly changing that shape was enough to lose your replacements — which happened twice in two releases. A replacement is now filed under a conversation when it is actually seen in that conversation's messages, so a site renaming a chat, redesigning its pages, or serving you a different layout no longer costs you anything. This also works on chat sites the extension has no specific knowledge of.

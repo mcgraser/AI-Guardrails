@@ -1,3 +1,5 @@
+import type { ScannableFileFormat } from './file-scan';
+
 export type GroupName =
   | 'Identity'
   | 'Contact'
@@ -160,6 +162,41 @@ export interface PiiResultResponse {
       totalMs: number;
       nerMs?: number;
     };
+  };
+}
+
+/**
+ * Asks the offscreen document to extract the text of an uploaded document
+ * and run detection on it. The bytes travel base64-encoded because runtime
+ * messages are JSON-serialized.
+ */
+export interface ScanFileRequest {
+  type: 'SCAN_FILE';
+  payload: {
+    requestId: string;
+    fileName: string;
+    format: ScannableFileFormat;
+    dataBase64: string;
+    config?: DetectionOptions;
+  };
+}
+
+/**
+ * `scanned` — text was extracted and detection ran; `spans` index into `text`.
+ * `no-text` — the file has no extractable text (e.g. a scanned PDF; no OCR).
+ * `unreadable` — the file is encrypted, corrupt, or too large to expand.
+ */
+export type FileScanStatus = 'scanned' | 'no-text' | 'unreadable';
+
+export interface FileScanResultResponse {
+  type: 'FILE_SCAN_RESULT';
+  payload: {
+    requestId: string;
+    status: FileScanStatus;
+    text: string;
+    spans: PiiSpan[];
+    truncated: boolean;
+    error?: string;
   };
 }
 
@@ -360,6 +397,8 @@ export interface Settings {
   theme: ThemeSetting;
   /** Fine-grained switch for the clipboard de-anonymization toast. */
   clipboardInterceptEnabled: boolean;
+  /** Check Word, Excel, PowerPoint and PDF uploads for personal data and warn before they are sent. */
+  fileScanEnabled: boolean;
   /** When true, skip PII detection inside fenced code blocks / preformatted regions. */
   skipCodeBlocks: boolean;
   /** What to do after the user explicitly cancels a running paste scan. */
@@ -402,6 +441,8 @@ export type Message =
   | CancelDetectionRequest
   | DetectionCanceledResponse
   | PiiResultResponse
+  | ScanFileRequest
+  | FileScanResultResponse
   | GetNerStatusRequest
   | NerStatusResponse
   | NerStatusChangedBroadcast

@@ -10,6 +10,7 @@
 		minConfidence,
 		debug,
 		clipboardInterceptEnabled,
+		fileScanEnabled,
 		nerModel,
 		nerModelChoice,
 		nerModelChoices,
@@ -19,6 +20,7 @@
 		setMinConfidence,
 		setDebug,
 		setClipboardInterceptEnabled,
+		setFileScanEnabled,
 		setNerModelChoice,
 		openOptions,
 		openIssueReport,
@@ -33,6 +35,7 @@
 		minConfidence: Writable<number>;
 		debug: Writable<boolean>;
 		clipboardInterceptEnabled: Writable<boolean>;
+		fileScanEnabled: Writable<boolean>;
 		nerModel: Writable<NerModelKey>;
 		nerModelChoice: Writable<string>;
 		nerModelChoices: readonly NerModelChoice[];
@@ -42,6 +45,7 @@
 		setMinConfidence: (value: number) => Promise<void>;
 		setDebug: (enabled: boolean) => Promise<void>;
 		setClipboardInterceptEnabled: (enabled: boolean) => Promise<void>;
+		setFileScanEnabled: (enabled: boolean) => Promise<void>;
 		setNerModelChoice: (value: string) => Promise<void>;
 		openOptions: () => void;
 		openIssueReport: () => void;
@@ -85,6 +89,7 @@
 	<article class="card">
 		<div class="head"><span>Behavior</span></div>
 		<div class="row"><div><div class="row-label">Intercept copy</div><div class="row-meta">Offer to restore originals when you copy replaced text. Paste review follows the master protection toggle.</div></div><Toggle size="sm" checked={$clipboardInterceptEnabled} onchange={(checked) => setClipboardInterceptEnabled(checked)} label="Intercept copy" /></div>
+		<div class="row"><div><div class="row-label">Scan file uploads</div><div class="row-meta">Check Word, Excel, PowerPoint and PDF files for personal data before they are uploaded, and warn when some is found. Text only, no OCR.</div></div><Toggle size="sm" checked={$fileScanEnabled} onchange={(checked) => setFileScanEnabled(checked)} label="Scan file uploads" /></div>
 		<div class="divider"></div>
 		<div class="row"><div><div class="row-label">Debug mode</div><div class="row-meta">Verbose logging in console</div></div><Toggle size="sm" checked={$debug} onchange={(checked) => setDebug(checked)} label="Debug mode" /></div>
 	</article>

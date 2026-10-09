@@ -1,11 +1,12 @@
 # Privacy Guardrail — User Guide
 
-These pages cover everything an end user needs to install, use, and troubleshoot the Privacy Guardrail Chrome extension. For an overview of the project, see the [main README](../../README.md).
+These pages cover everything an end user needs to install, use, and troubleshoot the Privacy Guardrail extension for Chrome and Microsoft Edge. For an overview of the project, see the [main README](../../README.md).
 
 ## Getting started
 
 - [Install from the Chrome Web Store](install-from-chrome-web-store.md) — how to add the extension to Chrome and confirm it's active.
-- [How to use Privacy Guardrail](how-to-use-privacy-guardrail.md) — the paste-and-review workflow on supported chat sites.
+- [Install on Microsoft Edge](install-on-microsoft-edge.md) — how to use the same extension in Edge.
+- [How to use Privacy Guardrail](how-to-use-privacy-guardrail.md) — the paste-and-review workflow and file-upload warnings on supported chat sites.
 
 ## Understanding detection
 

@@ -2,7 +2,7 @@
   "name": "privacy-guardrail",
   "version": "0.5.0",
   "private": true,
-  "description": "Chrome extension that detects and replaces PII before pasting into LLM chats",
+  "description": "Chrome and Edge extension that detects and replaces PII before pasting or uploading into LLM chats",
   "scripts": {
     "build:wasm": "cd crate && cargo build --release --target wasm32-unknown-unknown && wasm-bindgen --target web --out-dir pkg --out-name privacy_guardrail_wasm target/wasm32-unknown-unknown/release/privacy_guardrail_wasm.wasm",
     "build:ext": "webpack --mode production",
@@ -64,6 +64,8 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@huggingface/transformers": "4.2.0"
+    "@huggingface/transformers": "4.2.0",
+    "fflate": "0.8.2",
+    "pdfjs-dist": "4.10.38"
   }
 }

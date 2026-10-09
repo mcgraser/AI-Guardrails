@@ -147,6 +147,13 @@ module.exports = (_env = {}) => {
             to: 'wasm/[name][ext]',
             noErrorOnMissing: true,
           },
+          // pdf.js for PDF upload scanning, loaded on demand by the offscreen
+          // document (src/offscreen/file-text/pdf.ts) together with its worker
+          // and the CMaps it needs to decode text in CJK and other CID fonts.
+          { from: 'node_modules/pdfjs-dist/build/pdf.min.mjs', to: 'vendor/pdfjs/', info: { minimized: true } },
+          { from: 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs', to: 'vendor/pdfjs/', info: { minimized: true } },
+          { from: 'node_modules/pdfjs-dist/cmaps', to: 'vendor/pdfjs/cmaps/' },
+          { from: 'node_modules/pdfjs-dist/LICENSE', to: 'vendor/pdfjs/' },
           ...getNerAssetCopyPatterns(__dirname),
         ],
       }),

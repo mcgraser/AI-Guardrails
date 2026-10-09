@@ -276,6 +276,8 @@ export const DEFAULT_SETTINGS: Settings = {
   // Preserve the behavior shipped by the clipboard-interception slices:
   // users can opt out from the popup if the copy toast feels intrusive.
   clipboardInterceptEnabled: true,
+  // Uploaded Word/Excel/PowerPoint/PDF files are checked like pastes.
+  fileScanEnabled: true,
   skipCodeBlocks: false,
   // Privacy-safe default: an explicit cancel asks what to do with the pending paste.
   cancelDetectionBehavior: 'ask',

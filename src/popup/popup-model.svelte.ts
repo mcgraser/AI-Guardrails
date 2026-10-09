@@ -99,6 +99,7 @@ export type SettingsModel = {
   minConfidence: Writable<number>;
   debug: Writable<boolean>;
   clipboardInterceptEnabled: Writable<boolean>;
+  fileScanEnabled: Writable<boolean>;
   nerModel: Writable<NerModelKey>;
   nerModelChoice: Writable<string>;
   nerModelChoices: readonly NerModelChoice[];
@@ -112,6 +113,7 @@ export type SettingsModel = {
   setMinConfidence: (value: number) => Promise<void>;
   setDebug: (enabled: boolean) => Promise<void>;
   setClipboardInterceptEnabled: (enabled: boolean) => Promise<void>;
+  setFileScanEnabled: (enabled: boolean) => Promise<void>;
   setNerModelChoice: (value: string) => Promise<void>;
 };
 export type AppModels = {
@@ -211,6 +213,7 @@ export function createAppModels(): AppModels {
   const minConfidence = writable(0.5);
   const debug = writable(false);
   const clipboardInterceptEnabled = writable(true);
+  const fileScanEnabled = writable(true);
   const nerModel = writable<NerModelKey>('bardsai');
   const nerModelChoice = writable<string>(nerModelChoiceValue('bardsai', undefined));
 
@@ -225,6 +228,7 @@ export function createAppModels(): AppModels {
     minConfidence.set(settings.minConfidence);
     debug.set(settings.debug);
     clipboardInterceptEnabled.set(settings.clipboardInterceptEnabled);
+    fileScanEnabled.set(settings.fileScanEnabled);
     const normalizedModel = runtimeNerModelKey(settings.nerModel);
     nerModel.set(normalizedModel);
     nerModelChoice.set(nerModelChoiceValue(normalizedModel, settings.nerWebGpuDtype));
@@ -466,6 +470,7 @@ export function createAppModels(): AppModels {
       minConfidence,
       debug,
       clipboardInterceptEnabled,
+      fileScanEnabled,
       nerModel,
       nerModelChoice,
       nerModelChoices: nerModelChoices(),
@@ -479,6 +484,7 @@ export function createAppModels(): AppModels {
       setMinConfidence: (value) => saveAndBroadcast({ minConfidence: value }),
       setDebug: async (value) => { await saveSettings({ debug: value }); debug.set(value); },
       setClipboardInterceptEnabled: (value) => saveAndBroadcast({ clipboardInterceptEnabled: value }),
+      setFileScanEnabled: (value) => saveAndBroadcast({ fileScanEnabled: value }),
       setNerModelChoice: async (value) => {
         const parsed = parseNerModelChoice(value);
         const patch: Partial<Settings> = { nerModel: runtimeNerModelKey(parsed.nerModel) };
