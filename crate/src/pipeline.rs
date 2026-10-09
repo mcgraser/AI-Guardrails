@@ -3,7 +3,7 @@ use crate::context;
 use crate::merger;
 use crate::ner;
 use crate::regex_recognizers;
-use crate::types::{DetectionSource, PiiSpan, PipelineConfig};
+use crate::types::{DetectionSource, EntityType, PiiSpan, PipelineConfig};
 
 /// Run the full PII detection pipeline on the input text.
 ///
@@ -38,6 +38,7 @@ pub fn detect_with_external_spans(
         Vec::new()
     };
     ner_spans.extend(valid_external_ner_spans(text, external_ner_spans));
+    relabel_ner_spans_on_iban_shapes(text, &mut ner_spans);
 
     // Stage 3: Checksum validation (filter out invalid regex matches)
     regex_spans.retain(|span| checksum::validate(span));
@@ -83,6 +84,41 @@ fn valid_external_ner_spans(text: &str, spans: Vec<PiiSpan>) -> Vec<PiiSpan> {
             Some(span)
         })
         .collect()
+}
+
+/// The model sometimes tags the digit groups of an IBAN as a phone or card
+/// number. When regex validation confirms the IBAN, the merger already
+/// prefers it; this also covers IBAN-shaped text the checksum rejects (a typo
+/// or a placeholder such as `DE12 3456 7890 1234 5678 90`): a number-type NER
+/// span on such a token is reported as an IBAN covering the whole token.
+fn relabel_ner_spans_on_iban_shapes(text: &str, spans: &mut [PiiSpan]) {
+    if spans.is_empty() {
+        return;
+    }
+    let iban_ranges = regex_recognizers::iban_shaped_ranges(text);
+    if iban_ranges.is_empty() {
+        return;
+    }
+
+    for span in spans.iter_mut() {
+        if !matches!(
+            span.entity_type,
+            EntityType::Phone | EntityType::CreditCard | EntityType::Ssn | EntityType::Date
+        ) {
+            continue;
+        }
+        let Some(&(iban_start, iban_end)) = iban_ranges
+            .iter()
+            .find(|&&(start, end)| span.start < end && start < span.end)
+        else {
+            continue;
+        };
+
+        span.entity_type = EntityType::Iban;
+        span.start = span.start.min(iban_start);
+        span.end = span.end.max(iban_end);
+        span.text = text[span.start..span.end].to_string();
+    }
 }
 
 fn confidence_threshold_for(span: &PiiSpan, config: &PipelineConfig) -> f64 {
@@ -725,5 +761,335 @@ mod tests {
         );
         assert_detects("German", text, EntityType::IpAddress, "10.0.0.5");
         assert_detects("German", text, EntityType::Date, "15.01.1990");
+    }
+
+    // --- Cross-category confusion regressions -----------------------------
+
+    fn detections(text: &str) -> Vec<(EntityType, String)> {
+        detect(text, &default_config())
+            .into_iter()
+            .map(|span| (span.entity_type, span.text))
+            .collect()
+    }
+
+    const VALID_IBANS: &[&str] = &[
+        "DE89 3704 0044 0532 0130 00",
+        "DE89370400440532013000",
+        "de89 3704 0044 0532 0130 00",
+        "AT61 1904 3002 3457 3201",
+        "AT611904300234573201",
+        "CH93 0076 2011 6238 5295 7",
+        "CH9300762011623852957",
+        "NL91 ABNA 0417 1643 00",
+        "FR14 2004 1010 0505 0001 3M02 606",
+        "GB29 NWBK 6016 1331 9268 19",
+    ];
+
+    #[test]
+    fn ibans_are_detected_whole_and_never_as_phone_numbers() {
+        let templates = [
+            "{}",
+            "IBAN: {}",
+            "Bitte überweise an {}, Tel 030 1234567",
+            "please transfer to {} and call me back",
+            "Telefon und Konto: {} (Handy)",
+        ];
+
+        for iban in VALID_IBANS {
+            for template in templates {
+                let text = template.replace("{}", iban);
+                let start = text.find(iban).unwrap();
+                let end = start + iban.len();
+                let result = detect(&text, &default_config());
+
+                assert!(
+                    result
+                        .iter()
+                        .any(|s| s.entity_type == EntityType::Iban && s.text == *iban),
+                    "expected IBAN {iban:?} in {text:?}, got {result:?}"
+                );
+                assert!(
+                    !result.iter().any(|s| s.entity_type != EntityType::Iban
+                        && s.start < end
+                        && start < s.end),
+                    "expected nothing but the IBAN over {iban:?} in {text:?}, got {result:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn phone_keyword_next_to_iban_does_not_turn_it_into_a_phone() {
+        // Reported bug: "Tel" boosted the phone-shaped digit groups inside the
+        // IBAN above the IBAN itself, so they replaced it.
+        let result = detections("DE89 3704 0044 0532 0130 00, Tel 030 1234567");
+
+        assert_eq!(
+            result,
+            vec![
+                (EntityType::Iban, "DE89 3704 0044 0532 0130 00".to_string()),
+                (EntityType::Phone, "030 1234567".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn iban_shaped_text_with_bad_checksum_is_not_reported_as_phone_or_card() {
+        // A common placeholder IBAN: country code and length are right, the
+        // check digits are not.
+        for text in [
+            "IBAN DE12 3456 7890 1234 5678 90",
+            "IBAN de12 3456 7890 1234 5678 90",
+            "Konto AT12 3456 7890 1234 5678",
+        ] {
+            let result = detections(text);
+            assert!(
+                !result
+                    .iter()
+                    .any(|(t, _)| matches!(t, EntityType::Phone | EntityType::CreditCard)),
+                "expected no phone/card fragments in {text:?}, got {result:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn consecutive_ibans_are_both_detected() {
+        let result = detections("IBANs DE89370400440532013000 DE44500105175407324931");
+
+        assert_eq!(
+            result,
+            vec![
+                (EntityType::Iban, "DE89370400440532013000".to_string()),
+                (EntityType::Iban, "DE44500105175407324931".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn iban_is_not_extended_into_following_words() {
+        let result = detections("IBAN DE89 3704 0044 0532 0130 00 BIC COBADEFFXXX");
+
+        assert_eq!(
+            result,
+            vec![(EntityType::Iban, "DE89 3704 0044 0532 0130 00".to_string())]
+        );
+    }
+
+    #[test]
+    fn german_and_international_phone_formats_are_detected_whole() {
+        let cases = [
+            ("Tel. 030/12345678", "030/12345678"),
+            ("Tel.: 06221 / 12345", "06221 / 12345"),
+            ("Handy: 0170 1234567", "0170 1234567"),
+            ("Mobil 0170-1234567", "0170-1234567"),
+            ("Telefon 030 / 123 456 78", "030 / 123 456 78"),
+            ("Telefon 089 12 34 56 78", "089 12 34 56 78"),
+            ("Ruf an: 0049 30 12345678", "0049 30 12345678"),
+            ("Tel +49 (0)30 123 456 78", "+49 (0)30 123 456 78"),
+            ("Fax: +49 (0) 30 1234 5678", "+49 (0) 30 1234 5678"),
+            ("Tel +491701234567", "+491701234567"),
+            ("call +44 20 7946 0958", "+44 20 7946 0958"),
+            ("call +41 44 668 18 00", "+41 44 668 18 00"),
+            ("call 212.555.1234", "212.555.1234"),
+            ("call (030) 1234567", "(030) 1234567"),
+        ];
+
+        for (text, expected) in cases {
+            assert_detects("phone", text, EntityType::Phone, expected);
+        }
+    }
+
+    #[test]
+    fn international_phone_does_not_swallow_a_following_number() {
+        let result = detections("Tel +49 30 12345678 2024");
+
+        assert_eq!(
+            result,
+            vec![(EntityType::Phone, "+49 30 12345678".to_string())]
+        );
+    }
+
+    #[test]
+    fn phone_next_to_a_date_is_detected_separately() {
+        let result = detections("Datum 15.01.2024 030 1234567");
+
+        assert_eq!(
+            result,
+            vec![
+                (EntityType::Date, "15.01.2024".to_string()),
+                (EntityType::Phone, "030 1234567".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn non_phone_numbers_are_not_reported_as_phones() {
+        let texts = [
+            "Umsatz 12.500.000 EUR",
+            "Rechnung 2024-001-12345",
+            "Bestellnummer: 2024 1234 5678",
+            "Order 123-456-7890",
+            "Invoice no. 2024 555 1234",
+            "Card 1234 5678 9012 3456",
+            "Raum 12 34 56",
+            "ISBN 978-3-16-148410-0",
+            "Datum 45.67.2024",
+            "Reference AB12 3456 7890",
+        ];
+
+        for text in texts {
+            let phones: Vec<_> = detections(text)
+                .into_iter()
+                .filter(|(t, _)| *t == EntityType::Phone)
+                .collect();
+            assert!(
+                phones.is_empty(),
+                "expected no phone in {text:?}, got {phones:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn phone_label_wins_over_a_more_distant_document_label() {
+        assert_detects(
+            "German",
+            "Rechnung bitte an Tel. 030 1234567 schicken",
+            EntityType::Phone,
+            "030 1234567",
+        );
+    }
+
+    #[test]
+    fn credit_card_checks_reject_trivial_numbers_and_accept_amex() {
+        assert_detects(
+            "English",
+            "Amex 3782 822463 10005",
+            EntityType::CreditCard,
+            "3782 822463 10005",
+        );
+
+        for text in ["Card 0000 0000 0000 0000", "Card 0000 0000 0000 0018"] {
+            let result = detections(text);
+            assert!(
+                !result.iter().any(|(t, _)| *t == EntityType::CreditCard),
+                "expected no card in {text:?}, got {result:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn implausible_numeric_dates_are_rejected() {
+        for text in [
+            "Datum 45.67.2024",
+            "on 2024-13-45",
+            "am 12.03/2024",
+            "am 1.2.123",
+        ] {
+            let result = detections(text);
+            assert!(
+                !result.iter().any(|(t, _)| *t == EntityType::Date),
+                "expected no date in {text:?}, got {result:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn written_dates_in_german_and_day_first_english_are_detected() {
+        assert_detects(
+            "German",
+            "geboren am 15. März 1990",
+            EntityType::Date,
+            "15. März 1990",
+        );
+        assert_detects(
+            "German",
+            "Geburtstag 3. Mai 1985",
+            EntityType::Date,
+            "3. Mai 1985",
+        );
+        assert_detects(
+            "English",
+            "born 15 January 2024",
+            EntityType::Date,
+            "15 January 2024",
+        );
+    }
+
+    #[test]
+    fn dotted_quad_inside_longer_dotted_number_is_not_an_ip() {
+        for text in ["OID 1.2.3.4.5", "Version 10.0.0.1.2"] {
+            let result = detections(text);
+            assert!(
+                !result.iter().any(|(t, _)| *t == EntityType::IpAddress),
+                "expected no IP in {text:?}, got {result:?}"
+            );
+        }
+        assert_detects(
+            "English",
+            "IP 192.168.0.1.",
+            EntityType::IpAddress,
+            "192.168.0.1",
+        );
+    }
+
+    #[test]
+    fn email_wins_over_phone_digits_in_its_local_part() {
+        let result = detections("Mail 030.1234.5678@example.de");
+
+        assert_eq!(
+            result,
+            vec![(EntityType::Email, "030.1234.5678@example.de".to_string())]
+        );
+    }
+
+    #[test]
+    fn ner_phone_label_on_valid_iban_loses_to_regex_iban() {
+        let text = "Bankverbindung: DE89 3704 0044 0532 0130 00";
+        let spans = vec![external_span(
+            text,
+            "3704 0044 0532 0130 00",
+            EntityType::Phone,
+            0.97,
+        )];
+
+        let result = detect_with_external_spans(text, &default_config(), spans);
+
+        assert_eq!(result.len(), 1, "{result:?}");
+        assert_eq!(result[0].entity_type, EntityType::Iban);
+        assert_eq!(result[0].text, "DE89 3704 0044 0532 0130 00");
+        assert_eq!(result[0].source, DetectionSource::Regex);
+    }
+
+    #[test]
+    fn ner_phone_label_on_iban_shaped_text_with_bad_checksum_becomes_iban() {
+        let text = "IBAN DE12 3456 7890 1234 5678 90 bitte";
+        let spans = vec![external_span(
+            text,
+            "3456 7890 1234 5678 90",
+            EntityType::Phone,
+            0.92,
+        )];
+
+        let result = detect_with_external_spans(text, &default_config(), spans);
+
+        assert_eq!(result.len(), 1, "{result:?}");
+        assert_eq!(result[0].entity_type, EntityType::Iban);
+        assert_eq!(result[0].text, "DE12 3456 7890 1234 5678 90");
+        assert_eq!(result[0].source, DetectionSource::Ner);
+    }
+
+    #[test]
+    fn ner_phone_label_away_from_ibans_is_kept() {
+        let text = "IBAN DE89 3704 0044 0532 0130 00, Rückruf unter 030 1234567";
+        let spans = vec![external_span(text, "030 1234567", EntityType::Phone, 0.95)];
+
+        let result = detect_with_external_spans(text, &default_config(), spans);
+
+        assert!(result
+            .iter()
+            .any(|s| s.entity_type == EntityType::Phone && s.text == "030 1234567"));
+        assert!(result
+            .iter()
+            .any(|s| s.entity_type == EntityType::Iban && s.text == "DE89 3704 0044 0532 0130 00"));
     }
 }
