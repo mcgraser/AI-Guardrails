@@ -1,36 +1,37 @@
 /**
  * Shared design-system primitives for Shadow DOM UI mounted from content
  * scripts. Shadow roots do not get the popup/options stylesheet, so these
- * tokens intentionally mirror the public design tokens in a portable form.
+ * tokens intentionally mirror the public design tokens in a portable form
+ * (Bahmueller CI palette, see src/shared/styles/tokens.css).
  */
 export const SHADOW_DESIGN_SYSTEM_STYLES = `
   :host {
     all: initial;
-    --pg-font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-    --pg-color-focus: #93c5fd;
-    --pg-color-text-light: #f8fafc;
-    --pg-color-muted-dark: #cbd5e1;
-    --pg-color-header: #0f172a;
-    --pg-color-surface: #f7f8fa;
+    --pg-font-sans: "Roboto", Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --pg-color-focus: #7cc4ff;
+    --pg-color-text-light: #ffffff;
+    --pg-color-muted-dark: #e1e1e1;
+    --pg-color-header: #4b4b4b;
+    --pg-color-surface: #f5f5f5;
     --pg-color-card: #ffffff;
-    --pg-color-border: rgb(14 23 38 / 8%);
-    --pg-color-ink: #0e1726;
-    --pg-color-muted: #64748b;
-    --pg-color-subtle: #94a3b8;
-    --pg-color-accent: #1d4ed8;
-    --pg-color-accent-hover: #1e40af;
-    --pg-color-accent-soft: #eff6ff;
+    --pg-color-border: rgb(14 14 16 / 12%);
+    --pg-color-ink: #0e0e10;
+    --pg-color-muted: #575d5e;
+    --pg-color-subtle: #6b7173;
+    --pg-color-accent: #007cb0;
+    --pg-color-accent-hover: #00628c;
+    --pg-color-accent-soft: #e5f2f7;
     --pg-color-success: #22c55e;
     --pg-color-warning: #f59e0b;
     --pg-radius-sm: 6px;
     --pg-radius-md: 8px;
-    --pg-shadow-floating: 0 16px 40px rgb(15 23 42 / 24%);
-    --pg-shadow-floating-light: 0 10px 28px rgb(15 23 42 / 12%);
+    --pg-shadow-floating: 0 16px 40px rgb(14 14 16 / 24%);
+    --pg-shadow-floating-light: 0 10px 28px rgb(14 14 16 / 12%);
   }
 
   .pg-design-surface {
     box-sizing: border-box;
-    border: 1px solid rgb(148 163 184 / 22%);
+    border: 1px solid rgb(255 255 255 / 14%);
     background: var(--pg-color-header);
     color: var(--pg-color-text-light);
     box-shadow: var(--pg-shadow-floating);
@@ -43,7 +44,7 @@ export const SHADOW_DESIGN_SYSTEM_STYLES = `
     background: var(--pg-color-card);
     color: var(--pg-color-ink);
     box-shadow: var(--pg-shadow-floating-light);
-    --pg-color-focus: #1e40af;
+    --pg-color-focus: #00628c;
   }
 
   .pg-design-muted {
@@ -78,14 +79,14 @@ export const SHADOW_DESIGN_SYSTEM_STYLES = `
   }
 
   .pg-design-button-subtle {
-    border-color: rgb(148 163 184 / 28%);
-    background: rgb(148 163 184 / 14%);
-    color: #f8fafc;
+    border-color: rgb(255 255 255 / 28%);
+    background: rgb(255 255 255 / 10%);
+    color: #ffffff;
   }
 
   .pg-design-button-subtle:hover {
-    border-color: rgb(148 163 184 / 42%);
-    background: rgb(148 163 184 / 22%);
+    border-color: rgb(255 255 255 / 42%);
+    background: rgb(255 255 255 / 18%);
   }
 
   .pg-design-surface[data-theme="light"] .pg-design-button-subtle {
@@ -97,7 +98,7 @@ export const SHADOW_DESIGN_SYSTEM_STYLES = `
   .pg-design-surface[data-theme="light"] .pg-design-button-subtle:hover {
     border-color: var(--pg-color-accent);
     background: var(--pg-color-accent-soft);
-    color: var(--pg-color-accent);
+    color: var(--pg-color-accent-hover);
   }
 
   .pg-design-button:focus-visible {

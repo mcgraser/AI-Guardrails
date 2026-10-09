@@ -18,42 +18,42 @@ const STYLES = `
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(6, 8, 18, 0.52);
-    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background: rgba(14, 14, 16, 0.52);
+    font-family: "Roboto", Arial, system-ui, -apple-system, "Segoe UI", sans-serif;
   }
   .dialog {
     width: min(420px, 100%);
     box-sizing: border-box;
     border-radius: 16px;
     padding: 20px;
-    background: #18192b;
-    color: #e9eaf6;
-    border: 1px solid rgba(92, 96, 130, 0.72);
+    background: #4b4b4b;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
   }
   .dialog[data-theme="light"] {
     background: #ffffff;
-    color: #1f2933;
-    border-color: #e4e6eb;
-    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+    color: #0e0e10;
+    border-color: #e1e1e1;
+    box-shadow: 0 18px 50px rgba(14, 14, 16, 0.18);
   }
   .header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
   h2 { margin: 0 0 10px; font-size: 18px; line-height: 1.2; font-weight: 650; }
-  p { margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #b8bbd0; }
-  .dialog[data-theme="light"] p { color: #52606d; }
+  p { margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: #e1e1e1; }
+  .dialog[data-theme="light"] p { color: #575d5e; }
   .close {
     appearance: none; border: 0; background: transparent; color: inherit; cursor: pointer;
     font-size: 20px; line-height: 1; padding: 0 2px; opacity: 0.74;
   }
   label { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 13px; color: inherit; }
-  input { accent-color: #3b82f6; }
+  input { accent-color: #007cb0; }
   .actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
   button { font: inherit; }
   .secondary, .primary { border-radius: 9px; padding: 8px 13px; cursor: pointer; font-size: 13px; }
-  .secondary { background: transparent; color: inherit; border: 1px solid rgba(136, 140, 170, 0.55); }
-  .primary { background: #2563eb; color: #fff; border: 1px solid #2563eb; font-weight: 600; }
+  .secondary { background: transparent; color: inherit; border: 1px solid rgba(225, 225, 225, 0.55); }
+  .primary { background: #007cb0; color: #fff; border: 1px solid #007cb0; font-weight: 600; }
   .close:focus-visible, .secondary:focus-visible, .primary:focus-visible, input:focus-visible {
-    outline: 2px solid #60a5fa; outline-offset: 2px;
+    outline: 2px solid #7cc4ff; outline-offset: 2px;
   }
 `;
 

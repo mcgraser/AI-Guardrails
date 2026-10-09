@@ -32,7 +32,7 @@
 		padding: 2px;
 		border: 0;
 		border-radius: var(--radius-pill);
-		background: #334155;
+		background: #8c8c8c;
 		cursor: pointer;
 		transition: background 140ms ease;
 	}
@@ -54,7 +54,7 @@
 	}
 
 	.toggle.checked {
-		background: #2563eb;
+		background: var(--color-accent);
 	}
 
 	.toggle.checked span {
