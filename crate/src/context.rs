@@ -21,10 +21,34 @@ const PERSON_KEYWORDS: &[&str] = &[
     "owner",
     "recipient",
     "sender",
+    // German
+    "herr",
+    "frau",
+    "kunde",
+    "kundin",
+    "patientin",
+    "mitarbeiter",
+    "mitarbeiterin",
+    "ansprechpartner",
+    "ansprechpartnerin",
 ];
 
 const EMAIL_KEYWORDS: &[&str] = &[
-    "email", "e-mail", "mail", "contact", "send", "write", "reach", "address",
+    "email",
+    "e-mail",
+    "mail",
+    "contact",
+    "send",
+    "write",
+    "reach",
+    "address",
+    // German
+    "e-mail-adresse",
+    "mailadresse",
+    "emailadresse",
+    "kontakt",
+    "schreiben",
+    "adresse",
 ];
 
 const PHONE_KEYWORDS: &[&str] = &[
@@ -38,15 +62,65 @@ const PHONE_KEYWORDS: &[&str] = &[
     "number",
     "dial",
     "reach",
+    // German
+    "telefon",
+    "telefonnummer",
+    "handy",
+    "handynummer",
+    "mobil",
+    "mobilnummer",
+    "rufnummer",
+    "festnetz",
+    "anrufen",
+    "erreichbar",
+    "whatsapp",
 ];
 
 const LOCATION_KEYWORDS: &[&str] = &[
-    "address", "street", "city", "state", "country", "zip", "postal", "live", "lives", "located",
-    "from", "born", "based",
+    "address",
+    "street",
+    "city",
+    "state",
+    "country",
+    "zip",
+    "postal",
+    "live",
+    "lives",
+    "located",
+    "from",
+    "born",
+    "based",
+    // German
+    "adresse",
+    "anschrift",
+    "stadt",
+    "ort",
+    "wohnhaft",
+    "wohnt",
+    "geboren",
+    "plz",
 ];
 
 const ADDRESS_KEYWORDS: &[&str] = &[
-    "address", "street", "st", "road", "rd", "avenue", "ave", "lane", "ln", "zip", "postal",
+    "address",
+    "street",
+    "st",
+    "road",
+    "rd",
+    "avenue",
+    "ave",
+    "lane",
+    "ln",
+    "zip",
+    "postal",
+    // German
+    "adresse",
+    "anschrift",
+    "straße",
+    "strasse",
+    "str",
+    "plz",
+    "wohnhaft",
 ];
 
 const URL_KEYWORDS: &[&str] = &[
@@ -57,7 +131,17 @@ const USERNAME_KEYWORDS: &[&str] = &["username", "user", "handle", "login", "acc
 
 const PASSWORD_KEYWORDS: &[&str] = &["password", "passcode", "secret", "credential", "token"];
 
-const SSN_KEYWORDS: &[&str] = &["ssn", "social", "security", "tax", "identification", "id"];
+const SSN_KEYWORDS: &[&str] = &[
+    "ssn",
+    "social",
+    "security",
+    "tax",
+    "identification",
+    "id",
+    // German
+    "sozialversicherungsnummer",
+    "versicherungsnummer",
+];
 
 const CREDIT_CARD_KEYWORDS: &[&str] = &[
     "card",
@@ -68,16 +152,63 @@ const CREDIT_CARD_KEYWORDS: &[&str] = &[
     "amex",
     "payment",
     "cc",
+    // German
+    "kreditkarte",
+    "kreditkartennummer",
+    "karte",
+    "kartennummer",
+    "zahlung",
 ];
 
-const IBAN_KEYWORDS: &[&str] = &["iban", "bank", "account", "transfer", "wire", "routing"];
+const IBAN_KEYWORDS: &[&str] = &[
+    "iban",
+    "bank",
+    "account",
+    "transfer",
+    "wire",
+    "routing",
+    // German
+    "konto",
+    "kontonummer",
+    "bankverbindung",
+    "bankkonto",
+    "überweisung",
+    "überweisen",
+];
 
 const BANK_ACCOUNT_KEYWORDS: &[&str] = &[
-    "bank", "account", "routing", "transfer", "wire", "swift", "bic",
+    "bank",
+    "account",
+    "routing",
+    "transfer",
+    "wire",
+    "swift",
+    "bic",
+    // German
+    "konto",
+    "kontonummer",
+    "bankverbindung",
+    "bankkonto",
+    "überweisung",
 ];
 
 const DATE_KEYWORDS: &[&str] = &[
-    "born", "birthday", "dob", "date", "birth", "issued", "expires", "expiry",
+    "born",
+    "birthday",
+    "dob",
+    "date",
+    "birth",
+    "issued",
+    "expires",
+    "expiry",
+    // German
+    "geboren",
+    "geb",
+    "geburtsdatum",
+    "geburtstag",
+    "datum",
+    "ausgestellt",
+    "gültig",
 ];
 
 /// Get the relevant context keywords for an entity type.
@@ -254,6 +385,40 @@ mod tests {
         apply_context_boost(&mut spans, text, 5, 0.15);
         // IP has no keywords, score unchanged
         assert!((spans[0].score - 0.85).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_context_boost_german_keywords() {
+        let cases = [
+            (
+                "Telefonnummer: 030 1234567",
+                "030 1234567",
+                EntityType::Phone,
+            ),
+            ("Handy 0170 1234567", "0170 1234567", EntityType::Phone),
+            (
+                "Bankverbindung DE89370400440532013000",
+                "DE89370400440532013000",
+                EntityType::Iban,
+            ),
+            (
+                "Kreditkarte 4111111111111111",
+                "4111111111111111",
+                EntityType::CreditCard,
+            ),
+            ("Geburtsdatum 15.01.1990", "15.01.1990", EntityType::Date),
+        ];
+
+        for (text, value, entity_type) in cases {
+            let start = text.find(value).unwrap();
+            let mut spans = vec![make_span(start, start + value.len(), entity_type, 0.60)];
+            apply_context_boost(&mut spans, text, 5, 0.15);
+            assert!(
+                (spans[0].score - 0.75).abs() < 0.01,
+                "{text}: {}",
+                spans[0].score
+            );
+        }
     }
 
     #[test]

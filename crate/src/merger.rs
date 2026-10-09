@@ -1,76 +1,72 @@
 use crate::types::{DetectionSource, EntityType, PiiSpan};
 
+use std::cmp::Ordering;
+
 /// Merge overlapping PII spans, keeping authoritative structured detections
 /// ahead of weaker overlapping guesses.
 ///
 /// Algorithm:
-/// 1. Sort spans by start position, then by score descending.
-/// 2. Iterate through sorted spans, greedily keeping spans that don't overlap
-///    with already-accepted spans.
-/// 3. Resolve overlaps by source/type precedence first, then score.
+/// 1. Rank every span by precedence (source and how strongly its type is
+///    validated), then score, then length.
+/// 2. Accept spans in rank order, skipping any span that overlaps one already
+///    accepted.
+/// 3. Return the accepted spans in text order.
+///
+/// Ranking globally (instead of only against the previous span in text
+/// order) matters for structured data: a checksum-validated IBAN must beat
+/// the phone-shaped digit groups inside it, even when a nearby "Tel" boosts
+/// the phone fragment's score above the IBAN's.
 pub fn merge_spans(mut spans: Vec<PiiSpan>) -> Vec<PiiSpan> {
     if spans.len() <= 1 {
         return spans;
     }
 
-    // Sort by start position; on ties, prefer higher score
-    spans.sort_by(|a, b| {
-        a.start.cmp(&b.start).then(
-            b.score
-                .partial_cmp(&a.score)
-                .unwrap_or(std::cmp::Ordering::Equal),
-        )
-    });
+    spans.sort_by(rank);
 
     let mut merged: Vec<PiiSpan> = Vec::with_capacity(spans.len());
-
     for span in spans {
-        // Check if this span overlaps with the last accepted span
-        if let Some(last) = merged.last() {
-            if span.overlaps(last) {
-                if should_replace(last, &span) {
-                    let last_idx = merged.len() - 1;
-                    merged[last_idx] = span;
-                }
-                continue;
-            }
+        if !merged.iter().any(|accepted| accepted.overlaps(&span)) {
+            merged.push(span);
         }
-        merged.push(span);
     }
 
+    merged.sort_by_key(|span| (span.start, span.end));
     merged
 }
 
-fn should_replace(existing: &PiiSpan, candidate: &PiiSpan) -> bool {
-    let existing_precedence = precedence(existing);
-    let candidate_precedence = precedence(candidate);
-
-    if candidate_precedence != existing_precedence {
-        return candidate_precedence > existing_precedence;
-    }
-
-    candidate.score > existing.score
+/// Best span first.
+fn rank(a: &PiiSpan, b: &PiiSpan) -> Ordering {
+    precedence(b)
+        .cmp(&precedence(a))
+        .then(b.score.partial_cmp(&a.score).unwrap_or(Ordering::Equal))
+        .then((b.end - b.start).cmp(&(a.end - a.start)))
+        .then(a.start.cmp(&b.start))
 }
 
 fn precedence(span: &PiiSpan) -> u8 {
     match span.source {
-        DetectionSource::Manual => 3,
-        DetectionSource::Regex if is_authoritative_structured_type(span.entity_type) => 2,
-        DetectionSource::Regex | DetectionSource::Ner => 1,
+        DetectionSource::Manual => 10,
+        DetectionSource::Regex => structured_type_precedence(span.entity_type),
+        DetectionSource::Ner => 1,
     }
 }
 
-fn is_authoritative_structured_type(entity_type: EntityType) -> bool {
-    matches!(
-        entity_type,
-        EntityType::CreditCard
-            | EntityType::Iban
-            | EntityType::Ssn
-            | EntityType::Email
-            | EntityType::Phone
-            | EntityType::IpAddress
-            | EntityType::Date
-    )
+/// How much a regex detection of this type can be trusted over an
+/// overlapping one. Every structured regex type outranks NER (1).
+fn structured_type_precedence(entity_type: EntityType) -> u8 {
+    match entity_type {
+        // Checksum-validated (mod-97, Luhn): the strongest evidence.
+        EntityType::Iban | EntityType::CreditCard => 6,
+        // Unambiguous syntax.
+        EntityType::Email => 5,
+        // Fixed shapes with range/format validation.
+        EntityType::IpAddress | EntityType::Ssn => 4,
+        // Loose digit-group heuristics; the most likely to be a fragment of
+        // something else.
+        EntityType::Phone => 3,
+        EntityType::Date => 2,
+        _ => 1,
+    }
 }
 
 #[cfg(test)]
@@ -216,5 +212,88 @@ mod tests {
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].entity_type, EntityType::Organization);
         assert_eq!(result[0].source, DetectionSource::Ner);
+    }
+
+    #[test]
+    fn checksum_validated_iban_beats_context_boosted_phone_fragment() {
+        // "DE89 3704 0044 0532 0130 00, Tel 030 ..." — the phone-shaped
+        // fragment inside the IBAN picked up the "Tel" boost (0.85 > 0.80).
+        let spans = vec![
+            span(0, 27, 0.80, EntityType::Iban),
+            span(5, 19, 0.85, EntityType::Phone),
+        ];
+
+        let result = merge_spans(spans);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].entity_type, EntityType::Iban);
+        assert_eq!((result[0].start, result[0].end), (0, 27));
+    }
+
+    #[test]
+    fn credit_card_beats_overlapping_phone_regardless_of_order_or_score() {
+        let spans = vec![
+            span(0, 14, 0.95, EntityType::Phone),
+            span(0, 19, 0.75, EntityType::CreditCard),
+        ];
+
+        let result = merge_spans(spans);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].entity_type, EntityType::CreditCard);
+    }
+
+    #[test]
+    fn higher_precedence_span_starting_later_still_wins() {
+        // A weak span that starts first must not shadow a stronger span that
+        // starts inside it.
+        let spans = vec![
+            span(0, 12, 0.90, EntityType::Date),
+            span(6, 20, 0.70, EntityType::Phone),
+            span(15, 30, 0.80, EntityType::Iban),
+        ];
+
+        let result = merge_spans(spans);
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].entity_type, EntityType::Date);
+        assert_eq!(result[1].entity_type, EntityType::Iban);
+    }
+
+    #[test]
+    fn email_beats_phone_digits_inside_it_and_ip_beats_phone() {
+        let result = merge_spans(vec![
+            span(0, 24, 0.95, EntityType::Email),
+            span(0, 13, 0.85, EntityType::Phone),
+            span(30, 41, 0.85, EntityType::IpAddress),
+            span(30, 39, 0.99, EntityType::Phone),
+        ]);
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].entity_type, EntityType::Email);
+        assert_eq!(result[1].entity_type, EntityType::IpAddress);
+    }
+
+    #[test]
+    fn manual_span_beats_every_detection() {
+        let result = merge_spans(vec![
+            span(0, 22, 1.0, EntityType::Iban),
+            sourced_span(0, 10, 0.1, EntityType::Misc, DetectionSource::Manual),
+        ]);
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].source, DetectionSource::Manual);
+    }
+
+    #[test]
+    fn merged_spans_are_returned_in_text_order() {
+        let result = merge_spans(vec![
+            span(40, 50, 0.95, EntityType::Email),
+            span(0, 10, 0.70, EntityType::Phone),
+            span(20, 30, 0.80, EntityType::Iban),
+        ]);
+
+        let starts: Vec<_> = result.iter().map(|s| s.start).collect();
+        assert_eq!(starts, vec![0, 20, 40]);
     }
 }
