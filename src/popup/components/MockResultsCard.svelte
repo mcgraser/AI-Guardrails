@@ -28,7 +28,7 @@
 	.card { margin-bottom: 8px; overflow: hidden; border: var(--border-hairline); border-radius: var(--radius-lg); background: white; }
 	.row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; }
 	.row.muted { opacity: .55; }
-	.tag { padding: 2px 7px; border-radius: 4px; background: var(--color-accent-soft); color: var(--color-accent); font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: .2px; }
+	.tag { padding: 2px 7px; border-radius: 4px; background: var(--color-accent-soft); color: var(--color-accent-strong); font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: .2px; }
 	.val { flex: 1; overflow: hidden; color: var(--color-ink); font-family: var(--font-mono); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 	.conf { color: var(--color-success); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
 	.divider { height: 1px; background: var(--color-border); }

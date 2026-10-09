@@ -16,7 +16,7 @@
   position: fixed;
   inset: 0;
   z-index: 2147483647;
-  background: rgb(15 23 42 / 38%);
+  background: rgb(14 14 16 / 38%);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -43,7 +43,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border-header);
   border-radius: 14px;
-  box-shadow: 0 24px 60px rgb(15 23 42 / 28%), 0 8px 18px rgb(15 23 42 / 14%);
+  box-shadow: 0 24px 60px rgb(14 14 16 / 28%), 0 8px 18px rgb(14 14 16 / 14%);
   animation: pg-overlay-enter 500ms ease-out both;
   will-change: opacity, transform;
 }
@@ -108,7 +108,7 @@
   padding: 16px 20px;
   background: var(--color-header);
   color: white;
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
+  border-bottom: 3px solid var(--color-accent);
 }
 
 .pg-logo-box {
@@ -144,7 +144,7 @@
 
 .pg-header-status {
   font-size: 12.5px;
-  color: rgb(255 255 255 / 55%);
+  color: rgb(255 255 255 / 80%);
   white-space: nowrap;
 }
 .pg-count-num {
@@ -159,16 +159,37 @@
 .pg-close {
   background: none;
   border: 0;
-  color: rgb(255 255 255 / 65%);
+  color: rgb(255 255 255 / 80%);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
-  margin-left: auto;
   align-self: flex-start;
   transition: background 120ms ease, color 120ms ease;
 }
+/* Bahmueller logo (negative variant on CI dark grey). The header
+ * padding keeps the CI protection zone A (~9px at 14px height) clear. */
+.pg-bm-logo {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0 4px 0 12px;
+}
+.pg-bm-logo svg {
+  display: block;
+  width: auto;
+  height: 14px;
+}
+@media (max-width: 560px) {
+  .pg-bm-logo {
+    display: none;
+  }
+  .pg-close {
+    margin-left: auto;
+  }
+}
+
 .pg-close:hover {
   background: rgb(255 255 255 / 10%);
   color: white;
@@ -273,7 +294,7 @@
 }
 
 .pg-entity-row-selected {
-  background: rgb(29 78 216 / 3.5%);
+  background: rgb(0 124 176 / 5%);
 }
 
 .pg-entity-row.pg-entity-manual {
@@ -284,7 +305,7 @@
 .pg-entity-row-whitelisted .pg-entity-text {
   color: var(--color-muted);
   text-decoration: line-through;
-  text-decoration-color: rgb(100 116 139 / 50%);
+  text-decoration-color: rgb(87 93 94 / 50%);
 }
 
 /* Whitelisted pill — same footprint as the select in this column, but
@@ -312,7 +333,7 @@
   width: 18px;
   height: 18px;
   margin: 0;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid #c4c4c4;
   border-radius: 4px;
   background: var(--color-card);
   display: inline-flex;
@@ -329,7 +350,7 @@
   background-size: 14px 14px;
 }
 .pg-entity-checkbox input:focus-visible {
-  outline: 2px solid var(--color-glow);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
@@ -369,7 +390,7 @@
   background-size: 10px 10px;
 }
 .pg-entity-type:focus-visible {
-  outline: 2px solid var(--color-glow);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
@@ -472,7 +493,7 @@
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  box-shadow: 0 10px 24px rgb(15 23 42 / 16%), 0 1px 3px rgb(15 23 42 / 6%);
+  box-shadow: 0 10px 24px rgb(14 14 16 / 16%), 0 1px 3px rgb(14 14 16 / 6%);
   padding: 4px;
   font-family: var(--font-sans);
   color: var(--color-ink);
@@ -701,11 +722,11 @@ details[open] > .pg-code-disclosure-summary::before {
 .pg-btn-primary {
   background: var(--color-accent);
   color: white;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 12%);
+  box-shadow: 0 1px 2px rgb(14 14 16 / 12%);
 }
 .pg-btn-primary:hover {
-  background: #1e3a8a;
-  box-shadow: 0 0 0 3px rgb(96 165 250 / 28%);
+  background: var(--color-accent-strong);
+  box-shadow: 0 0 0 3px rgb(25 153 255 / 28%);
 }
 
 /* ------------------------------------------------------------------ */
@@ -757,7 +778,7 @@ details[open] > .pg-code-disclosure-summary::before {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 12px 32px rgb(15 23 42 / 18%), 0 1px 3px rgb(15 23 42 / 6%);
+  box-shadow: 0 12px 32px rgb(14 14 16 / 18%), 0 1px 3px rgb(14 14 16 / 6%);
   font-family: var(--font-sans);
   color: var(--color-ink);
 }
@@ -948,5 +969,5 @@ details[open] > .pg-code-disclosure-summary::before {
   cursor: pointer;
 }
 .pg-mark-add:hover {
-  background: #1e3a8a;
+  background: var(--color-accent-strong);
 }

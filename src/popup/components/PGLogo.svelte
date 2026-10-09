@@ -26,8 +26,8 @@
 			gradientUnits="userSpaceOnUse"
 			gradientTransform="matrix(432,-549.837,699.817,549.837,0,549.837)"
 		>
-			<stop offset="0" stop-color="#AE66CD" />
-			<stop offset="1" stop-color="#4A64CA" />
+			<stop offset="0" stop-color="#1999FF" />
+			<stop offset="1" stop-color="#007CB0" />
 		</linearGradient>
 		<radialGradient
 			id={raysId}
@@ -37,8 +37,8 @@
 			gradientUnits="userSpaceOnUse"
 			gradientTransform="matrix(216,0,0,300,216,201)"
 		>
-			<stop offset="0" stop-color="#6064CB" stop-opacity="0.5" />
-			<stop offset="1" stop-color="#6164CB" stop-opacity="0.12" />
+			<stop offset="0" stop-color="#1999FF" stop-opacity="0.5" />
+			<stop offset="1" stop-color="#1999FF" stop-opacity="0.12" />
 		</radialGradient>
 	</defs>
 	<g transform="translate(-411 -169)">

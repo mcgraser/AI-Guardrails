@@ -125,7 +125,7 @@
 		font-weight: 500;
 		cursor: pointer;
 	}
-	.add-btn:hover { background: #1e40af; }
+	.add-btn:hover { background: var(--color-accent-strong); }
 	.error { margin: 0; color: var(--color-danger); font-size: 12px; }
 	.empty { margin: 0; color: var(--color-subtle); font-size: 13px; font-style: italic; }
 

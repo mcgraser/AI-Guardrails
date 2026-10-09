@@ -158,12 +158,17 @@ Official packages include these bundled font files:
 - IBM Plex Sans: `ibm-plex-sans-300.woff2`, `ibm-plex-sans-400.woff2`,
   `ibm-plex-sans-500.woff2`, `ibm-plex-sans-600.woff2`
 - JetBrains Mono: `jetbrains-mono-400.woff2`, `jetbrains-mono-600.woff2`
+- Roboto: `roboto-300.woff2`, `roboto-400.woff2`, `roboto-500.woff2`,
+  `roboto-700.woff2` (latin subset, via `@fontsource/roboto` 5.1.0)
 
 IBM Plex Sans is Copyright (c) IBM Corp. and licensed under the SIL Open Font
 License, Version 1.1. "Plex" is a Reserved Font Name.
 
 JetBrains Mono is Copyright (c) The JetBrains Mono Project Authors and licensed
 under the SIL Open Font License, Version 1.1.
+
+Roboto is Copyright 2011 Google Inc. (designed by Christian Robertson) and
+licensed under the Apache License, Version 2.0.
 
 The font files are redistributed unmodified as bundled browser assets.
 
@@ -173,6 +178,11 @@ The DFKI name, DFKI logo, Privacy Guardrail name, and project logos are not
 licensed under the Apache License, Version 2.0, except as required for
 reasonable and customary use in describing the origin of the work and
 reproducing the `NOTICE` file.
+
+The BAHMÜLLER name and logo (`assets/brand/`) are marks of Wilhelm Bahmüller
+Maschinenbau Präzisionswerkzeuge GmbH, used for its corporate build per its
+CI manual (see `docs/BRANDING.md`). They are not licensed under the Apache
+License, Version 2.0.
 
 Official packages may include project logo assets under `assets/` and
 `legal/`. Third parties redistributing modified versions must not imply DFKI

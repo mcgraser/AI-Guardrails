@@ -32,7 +32,7 @@
 		display: inline-flex;
 		padding: 2px;
 		border-radius: 6px;
-		background: #f1f5f9;
+		background: var(--color-surface);
 	}
 	.segmented button {
 		padding: 4px 10px;

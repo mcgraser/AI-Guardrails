@@ -18,12 +18,12 @@ const CHIP_STYLES = `
     left: 16px;
     z-index: 2147483645;
     max-width: min(320px, calc(100vw - 32px));
-    background: #1a1a2e;
-    color: #e0e0e0;
+    background: #4b4b4b;
+    color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: "Roboto", Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 12px;
     line-height: 1.4;
     padding: 10px 12px;
@@ -35,9 +35,9 @@ const CHIP_STYLES = `
 
   .pg-chip[data-theme="light"] {
     background: #ffffff;
-    color: #1f2933;
-    border-color: #e4e6eb;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
+    color: #0e0e10;
+    border-color: #e1e1e1;
+    box-shadow: 0 2px 8px rgba(14, 14, 16, 0.10);
   }
 
   .pg-chip-header {

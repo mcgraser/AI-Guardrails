@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createAppModels, tabs } from "./popup-model.svelte";
+  import BahmuellerLogo from "../shared/brand/BahmuellerLogo.svelte";
   import DetectTab from "./components/DetectTab.svelte";
   import DFKILogo from "./components/DFKILogo.svelte";
   import PGLogo from "./components/PGLogo.svelte";
@@ -15,6 +16,9 @@
 
 <div class="page-frame">
   <main class="popup-shell" aria-label="Privacy Guardrail popup">
+    <div class="corporate-bar">
+      <BahmuellerLogo height={14} />
+    </div>
     <header class="shell-header">
       <div class="brand-row">
         <div class="logo-box"><PGLogo size={24} /></div>
@@ -121,7 +125,7 @@
   }
   :global(body) {
     font-family: var(--font-sans);
-    background: #e5e7eb;
+    background: var(--bm-light-grey);
     color: var(--color-ink);
   }
 
@@ -139,6 +143,16 @@
     overflow: hidden;
     background: var(--color-surface);
     color: var(--color-ink);
+  }
+  /* CI 6.1/11.4: logo top right on white, protection zone A (wordmark
+   * cap height, ~9px at 14px logo height) kept clear on every side. */
+  .corporate-bar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px 18px;
+    background: var(--color-card);
   }
   .shell-header {
     flex-shrink: 0;
@@ -167,7 +181,7 @@
   .brand-copy h1 {
     margin: 0;
     font-size: 18px;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: -0.1px;
     white-space: nowrap;
     display: inline-flex;
@@ -178,9 +192,8 @@
     display: inline-block;
     padding: 1px 6px;
     border-radius: 999px;
-    background: var(--color-glow, #f59e0b);
+    background: var(--color-accent);
     color: #ffffff;
-    text-shadow: 0 0 1px #000;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.6px;
@@ -190,7 +203,7 @@
   }
   .brand-copy p {
     margin: 1px 0 0;
-    color: var(--color-muted);
+    color: rgb(255 255 255 / 80%);
     font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
@@ -223,7 +236,7 @@
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     background: transparent;
-    color: rgb(255 255 255 / 50%);
+    color: rgb(255 255 255 / 75%);
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.1px;
@@ -231,7 +244,7 @@
   }
   .tab-nav button.active {
     border-bottom-color: var(--color-glow);
-    box-shadow: inset 0 -14px 28px -11px var(--color-glow);
+    box-shadow: inset 0 -14px 28px -14px var(--color-glow);
     color: white;
     font-weight: 600;
   }
@@ -245,15 +258,15 @@
   .shell-footer {
     flex-shrink: 0;
     padding: 8px 12px;
-    border-top: 1px solid rgb(14 23 38 / 8%);
-    background: var(--color-header);
+    border-top: 1px solid var(--color-border-strong);
+    background: var(--color-card);
   }
   .shell-footer button {
     width: 100%;
     padding: 6px;
     border: 0;
     background: transparent;
-    color: #93c5fd;
+    color: var(--color-accent);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;

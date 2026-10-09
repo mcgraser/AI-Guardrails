@@ -32,7 +32,7 @@ const SCANNING_INDICATOR_STYLES = `
     height: 8px;
     border-radius: 999px;
     background: var(--pg-color-accent);
-    box-shadow: 0 0 0 3px rgb(29 78 216 / 18%);
+    box-shadow: 0 0 0 3px rgb(0 124 176 / 18%);
     flex: 0 0 auto;
   }
 

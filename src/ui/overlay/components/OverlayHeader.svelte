@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BahmuellerLogo from "../../../shared/brand/BahmuellerLogo.svelte";
   import PGLogo from "./PGLogo.svelte";
 
   let { totalCount, timingMs, onClose }: { totalCount: number; timingMs?: number; onClose: () => void } = $props();
@@ -17,6 +18,7 @@
       >
     </span>
   </div>
+  <span class="pg-bm-logo"><BahmuellerLogo height={14} variant="negative" /></span>
   <button type="button" class="pg-close" title="Cancel (nothing pasted)" aria-label="Cancel" onclick={onClose}>×</button
   >
 </header>

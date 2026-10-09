@@ -11,15 +11,15 @@ const MODAL_STYLES = `
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(10, 13, 28, 0.48);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: rgba(14, 14, 16, 0.48);
+    font-family: "Roboto", Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   .pg-critical-modal {
     width: min(520px, calc(100vw - 48px));
     border-radius: 16px;
-    background: #151527;
-    color: #f6f7fb;
+    background: #4b4b4b;
+    color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
     padding: 22px;
@@ -28,9 +28,9 @@ const MODAL_STYLES = `
 
   .pg-critical-modal[data-theme="light"] {
     background: #ffffff;
-    color: #172033;
-    border-color: #d7dce8;
-    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+    color: #0e0e10;
+    border-color: #e1e1e1;
+    box-shadow: 0 24px 70px rgba(14, 14, 16, 0.18);
   }
 
   .pg-critical-modal-title {
@@ -59,7 +59,7 @@ const MODAL_STYLES = `
 
   .pg-critical-modal-button {
     appearance: none;
-    border: 1px solid #3b82f6;
+    border: 1px solid #007cb0;
     border-radius: 9px;
     padding: 9px 13px;
     font: inherit;
@@ -69,7 +69,7 @@ const MODAL_STYLES = `
   }
 
   .pg-critical-modal-button-primary {
-    background: #3b82f6;
+    background: #007cb0;
     color: #ffffff;
   }
 
@@ -80,7 +80,7 @@ const MODAL_STYLES = `
   }
 
   .pg-critical-modal[data-theme="light"] .pg-critical-modal-button-secondary {
-    border-color: #cbd5e1;
+    border-color: #c4c4c4;
   }
 `;
 

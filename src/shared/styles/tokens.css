@@ -1,30 +1,41 @@
+/*
+ * Design tokens — Bahmüller corporate identity.
+ *
+ * Source: BAHMÜLLER CI Manual, Version 1 (2018-08-15), chapter 8.2
+ * "Web-Farben" and chapter 7.1 "Schriften". Raw brand values live in the
+ * `--bm-*` tokens; the semantic tokens below map UI roles onto them.
+ * Values marked "derived" are not in the manual and only exist to keep
+ * WCAG AA contrast (see docs/BRANDING.md).
+ */
+
+/* Web font per CI 7.1: Roboto (bahmueller.de). Bundled, latin subset. */
 @font-face {
-  font-family: "IBM Plex Sans";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url("/fonts/ibm-plex-sans-300.woff2") format("woff2");
+  src: url("/fonts/roboto-300.woff2") format("woff2");
 }
 @font-face {
-  font-family: "IBM Plex Sans";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/ibm-plex-sans-400.woff2") format("woff2");
+  src: url("/fonts/roboto-400.woff2") format("woff2");
 }
 @font-face {
-  font-family: "IBM Plex Sans";
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("/fonts/ibm-plex-sans-500.woff2") format("woff2");
+  src: url("/fonts/roboto-500.woff2") format("woff2");
 }
 @font-face {
-  font-family: "IBM Plex Sans";
+  font-family: "Roboto";
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   font-display: swap;
-  src: url("/fonts/ibm-plex-sans-600.woff2") format("woff2");
+  src: url("/fonts/roboto-700.woff2") format("woff2");
 }
 @font-face {
   font-family: "JetBrains Mono";
@@ -45,19 +56,33 @@
 .pg-overlay-backdrop {
   --popup-width: 420px;
   --popup-height: 600px;
-  --font-sans: "IBM Plex Sans", -apple-system, system-ui, sans-serif;
+
+  /* Bahmüller brand palette (CI 8.2 Web-Farben) */
+  --bm-blue: #007cb0; /* Hauptfarbe BLAU */
+  --bm-blue-bright: #1999ff; /* Blau RGB 25/153/255 (Pantone 285) — accents only */
+  --bm-black: #0e0e10; /* Headlines SCHWARZ */
+  --bm-grey: #575d5e; /* Copy-Text GRAU */
+  --bm-white: #ffffff; /* Basis / Negativ WEISS */
+  --bm-light-grey: #e1e1e1; /* Hintergrund HELLGRAU */
+  --bm-dark-grey: #4b4b4b; /* Hintergrund GRAU */
+  --bm-logo-grey: #949497; /* FLOW / SPAN grey of the vector logo */
+  --bm-blue-dark: #00628c; /* derived: hover / text on tinted blue */
+  --bm-blue-soft: #e5f2f7; /* derived: 10 % blue tint */
+
+  --font-sans: "Roboto", Arial, -apple-system, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --color-header: #0f172a;
-  --color-surface: #f7f8fa;
+  --color-header: #4b4b4b;
+  --color-surface: #f5f5f5;
   --color-card: #ffffff;
-  --color-border: rgb(14 23 38 / 6%);
-  --color-border-strong: rgb(14 23 38 / 8%);
-  --color-ink: #0e1726;
-  --color-muted: #64748b;
-  --color-subtle: #94a3b8;
-  --color-accent: #1d4ed8;
-  --color-accent-soft: #eff6ff;
-  --color-glow: #7f66cc;
+  --color-border: rgb(14 14 16 / 8%);
+  --color-border-strong: rgb(14 14 16 / 12%);
+  --color-ink: #0e0e10;
+  --color-muted: #575d5e;
+  --color-subtle: #6b7173;
+  --color-accent: #007cb0;
+  --color-accent-strong: #00628c;
+  --color-accent-soft: #e5f2f7;
+  --color-glow: #1999ff;
   --color-success: #22c55e;
   --color-danger: #ef4444;
   --space-1: 4px;

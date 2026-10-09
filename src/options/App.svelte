@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import BahmuellerLogo from '../shared/brand/BahmuellerLogo.svelte';
 	import DFKILogo from '../popup/components/DFKILogo.svelte';
 	import PGLogo from '../popup/components/PGLogo.svelte';
 	import { createOptionsModel } from './options-model.svelte';
@@ -35,6 +36,9 @@
 </script>
 
 <div class="page">
+	<div class="corporate-bar">
+		<BahmuellerLogo height={20} />
+	</div>
 	<header class="page-header">
 		<div class="brand-row">
 			<div class="logo-box"><PGLogo size={24} /></div>
@@ -139,6 +143,23 @@
 		padding: 0 0 64px;
 	}
 
+	/* CI 6.1/11.4: logo top right on a white area, protection zone A
+	 * (wordmark cap height, ~13px at 20px logo height) kept clear. */
+	.corporate-bar {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		padding: 16px 24px;
+		background: var(--color-card);
+		border-bottom: 1px solid var(--bm-light-grey);
+	}
+	@media (min-width: 808px) {
+		.corporate-bar {
+			padding-left: 20px;
+			padding-right: 20px;
+		}
+	}
+
 	.page-header {
 		margin: 0 -24px 24px;
 		padding: 16px 24px;
@@ -172,7 +193,7 @@
 	.brand-copy h1 {
 		margin: 0;
 		font-size: 20px;
-		font-weight: 300;
+		font-weight: 400;
 		letter-spacing: -0.1px;
 		display: inline-flex;
 		align-items: center;
@@ -182,9 +203,8 @@
 		display: inline-block;
 		padding: 2px 7px;
 		border-radius: 999px;
-		background: var(--color-glow, #f59e0b);
+		background: var(--color-accent);
 		color: #fff;
-		text-shadow: 0 0 1px #000;
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.6px;
@@ -194,7 +214,7 @@
 	}
 	.brand-copy p {
 		margin: 2px 0 0;
-		color: rgb(255 255 255 / 65%);
+		color: rgb(255 255 255 / 80%);
 		font-size: 12px;
 	}
 	.dfki-mark {
@@ -210,7 +230,7 @@
 		font-size: 10px;
 		font-weight: 400;
 		letter-spacing: 0.3px;
-		color: rgb(255 255 255 / 60%);
+		color: rgb(255 255 255 / 80%);
 		text-transform: lowercase;
 	}
 

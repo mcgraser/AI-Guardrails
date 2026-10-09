@@ -128,7 +128,7 @@
 	.mono, .count { color: var(--color-accent); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
 	.count { color: var(--color-muted); font-size: 11px; }
 	input { width: 100%; accent-color: var(--color-accent); }
-	select, .select { display: flex; align-items: center; gap: 6px; max-width: 180px; padding: 5px 10px; border: 0; border-radius: 6px; background: #f1f5f9; color: var(--color-ink); font-size: 12px; font-weight: 500; cursor: pointer; }
+	select, .select { display: flex; align-items: center; gap: 6px; max-width: 180px; padding: 5px 10px; border: 0; border-radius: 6px; background: var(--color-surface); color: var(--color-ink); font-size: 12px; font-weight: 500; cursor: pointer; }
 	.divider { height: 1px; background: var(--color-border); }
 	.right { display: flex; align-items: center; gap: 8px; }
 	.version-note { padding: 4px 0 8px; color: var(--color-subtle); font-family: var(--font-mono); font-size: 10px; text-align: center; }
