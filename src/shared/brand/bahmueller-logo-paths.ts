@@ -1,7 +1,7 @@
 /**
  * Bahmüller logo ("FLOW" + "BAHMÜLLER" wordmark with "SPAN"), extracted 1:1 from
  * the vector artwork on page 10 of the Bahmüller CI manual (Version 1,
- * 2018-08-15). Generated data, do not edit by hand. See docs/BRANDING.md.
+ * 2018-08-15). Generated data, do not edit by hand. See docs/branding/BRANDING.md.
  */
 export const BAHMUELLER_LOGO_VIEWBOX = "0 0 283.41 37.98";
 export const BAHMUELLER_LOGO_ASPECT = 7.4612;

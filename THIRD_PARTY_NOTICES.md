@@ -181,7 +181,7 @@ reproducing the `NOTICE` file.
 
 The BAHMÜLLER name and logo (`assets/brand/`) are marks of Wilhelm Bahmüller
 Maschinenbau Präzisionswerkzeuge GmbH, used for its corporate build per its
-CI manual (see `docs/BRANDING.md`). They are not licensed under the Apache
+CI manual (see `docs/branding/BRANDING.md`). They are not licensed under the Apache
 License, Version 2.0.
 
 Official packages may include project logo assets under `assets/` and

@@ -5,7 +5,7 @@
  * "Web-Farben" and chapter 7.1 "Schriften". Raw brand values live in the
  * `--bm-*` tokens; the semantic tokens below map UI roles onto them.
  * Values marked "derived" are not in the manual and only exist to keep
- * WCAG AA contrast (see docs/BRANDING.md).
+ * WCAG AA contrast (see docs/branding/BRANDING.md).
  */
 
 /* Web font per CI 7.1: Roboto (bahmueller.de). Bundled, latin subset. */
